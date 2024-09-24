@@ -14,7 +14,7 @@ Also we have integrated the OpenAI so that user can give prompt to AI and get th
 
 1. Clone the repository
 ```bash
-git clone https://github.com/Waishnav/Doc-AI
+git clone https://github.com/kk0mtl/AiDoc.git ./
 ```
 
 
