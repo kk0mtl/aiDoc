@@ -6,7 +6,6 @@ This project is a real-time document editor built using React and Quill.js. It a
 Also we have integrated the OpenAI so that user can give prompt to AI and get the results to write a documents.
 
 ## Features
-- User authentication and authorization using JWT
 - Create and edit documents in real-time 
 - Live collaboration
 - Store documents on MongoDB
@@ -37,7 +36,6 @@ Backend will be at `http://localhost:3001`
 - Quill.js
 - MongoDB
 - Socket.io
-- JWT
 - OpenAI API
 
 ## Contributors
