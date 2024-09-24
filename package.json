@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "bfg": "^0.3.0",
+    "dotenv": "^16.4.5",
+    "git-filter-repo": "^0.0.30",
+    "wget": "^0.0.1"
+  }
+}
