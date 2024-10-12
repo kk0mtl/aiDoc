@@ -3,7 +3,6 @@ import './App.css';
 // import Login from "./pages/Login/Login"
 import DocumentEditor from "./components/DocumentEditor/DocumentEditor"
 import Dashboard from "./pages/Dashboard/Dashboard"
-import Home from "./pages/Home/Home.jsx"
 import DocumentPage from './pages/DocumentPage/DocumentPage';
 import PrivateRoutes from './PrivateRoutes';
 import {
@@ -22,9 +21,10 @@ function App() {
         <Route element={<PrivateRoutes />}>
           <Route element={<Dashboard />} path="/dashboard" exact></Route>
           {/* <Route element={<DocumentEditor/>} path="/documents/:id"></Route> */}
-          <Route element={<DocumentPage />} path="/documents/:id" exact></Route>
+          <Route path="/documents/:id" element={<DocumentPage />} exact></Route>
         </Route>
-        <Route path="/" element={<DocumentEditor />} />
+        {/* <Route path="/dashboard/:roomId" element={<Dashboard />} /> */}
+        <Route path="/" element={<Dashboard />} />
       </Routes>
     </BrowserRouter>
   );

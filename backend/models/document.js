@@ -1,13 +1,10 @@
 const mongoose = require('mongoose');
 
 const documentSchema = new mongoose.Schema({
-    // _id: {
-    //     type: String,
-    //     required: true
-    // },
     title: {
         type: String,
-        required: true
+        required: true,
+        default: "Untitled Document"
     },
     content: {
         type: String,
@@ -18,6 +15,10 @@ const documentSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
+    roomId: {
+        type: String,
+        required: true
+    },
     createdAt: {
         type: Date,
         default: Date.now
@@ -25,16 +26,7 @@ const documentSchema = new mongoose.Schema({
     updatedAt: {
         type: Date,
         default: Date.now
-    },
-    // access: {
-    //     type: String,
-    //     enum: ['private', 'public'],
-    //     default: 'private'
-    // },
-    // collaborators: [{
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: 'User',
-    // }]
+    }
 });
 
 const Document = mongoose.model('Document', documentSchema);

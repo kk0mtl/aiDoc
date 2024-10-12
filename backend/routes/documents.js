@@ -1,88 +1,84 @@
-const router = require('express').Router();
-const documentsController = require('../controllers/documents');
-const auth = require('../middleware/auth');
+const express = require('express');
+const router = express.Router();
+const Document = require('../models/document'); // Document 모델
 
-const promiseHandler= fn => (req, res, next) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
-  };
-// router.post('/', documentsController.createDocument);
-// router.get('/', documentsController.getAllDocuments);
-// router.get('/:uuid', documentsController.getDocumentByUUID);
-// router.put('/:uuid', documentsController.updateDocument);
-// router.delete('/:uuid', documentsController.deleteDocument);
+// 문서 생성
+router.post('/', async (req, res) => {
+    const { title, content, owner, roomId } = req.body;
 
-router.post('/', auth.verifyJWT, promiseHandler( async (req,res,next) => {
     try {
-      const document = await documentsController.createDocument(req.userId)
-      console.log(document)
-      res.status(200).json({ document: document });
+        const newDocument = new Document({ title, content, owner, roomId });
+        await newDocument.save();
+        res.status(201).json({ document: newDocument });
     } catch (error) {
-      res.status(500).json({ message: 'Error Occurred but document created '});
+        console.error("Error creating document", error);
+        res.status(500).json({ message: 'Error creating document', error });
     }
-}));
+});
 
-router.get('/', auth.verifyJWT, promiseHandler( async (req,res,nex) => {
+// 문서 조회 (roomId로)
+router.get('/:roomId', async (req, res) => {
+    const { roomId } = req.params;
+
     try {
-        const documents = await documentsController.getAllDocuments(req.userId);
+        const documents = await Document.find({ roomId });
+        if (!documents.length) {
+            return res.status(404).json({ message: 'No documents found' });
+        }
         res.status(200).json({ documents });
+    } catch (error) {
+        console.error("Error fetching documents", error);
+        res.status(500).json({ message: 'Error fetching documents', error });
     }
-    catch (error) {
-        res.status(500).json({ error });
-    }
-}));
+});
 
-router.get('/:uuid', auth.verifyJWT , promiseHandler( async (req,res,next) => {
+// 단일 문서 조회
+router.get('/document/:id', async (req, res) => {
+    const { id } = req.params;
+
     try {
-        const { uuid } = req.params;
-        const document = await documentsController.getDocumentByUUID(uuid);
+        const document = await Document.findById(id);
         if (!document) {
-            return res.status(404).json({ error: 'Document not found' });
+            return res.status(404).json({ message: 'Document not found' });
         }
         res.status(200).json({ document });
     } catch (error) {
-        res.status(500).json({ error });
+        console.error("Error fetching document", error);
+        res.status(500).json({ message: 'Error fetching document', error });
     }
-}));
+});
 
-router.put('/:uuid', auth.verifyJWT , promiseHandler( async (req,res,nex) => {
+// 문서 업데이트
+router.put('/:id', async (req, res) => {
+    const { id } = req.params;
+    const { title, content } = req.body;
+
     try {
-        const { uuid } = req.params;
-        const document = await documentsController.updateDocument(uuid, req.body);
+        const document = await Document.findByIdAndUpdate(id, { title, content, updatedAt: Date.now() }, { new: true });
         if (!document) {
-            return res.status(404).json({ error: 'Document not found' });
+            return res.status(404).json({ message: 'Document not found' });
         }
         res.status(200).json({ document });
     } catch (error) {
-        res.status(500).json({ error });
+        console.error("Error updating document", error);
+        res.status(500).json({ message: 'Error updating document', error });
     }
-}));
+});
 
-router.delete('/:uuid', auth.verifyJWT , promiseHandler( async (req,res,nex) => {
+// 문서 삭제
+router.delete('/:id', async (req, res) => {
+    const { id } = req.params;
+
     try {
-        const { uuid } = req.params;
-        const document = await documentsController.deleteDocument(uuid);
+        const document = await Document.findByIdAndDelete(id);
         if (!document) {
-            return res.status(404).json({ error: 'Document not found' });
+            return res.status(404).json({ message: 'Document not found' });
         }
-        res.status(200).json({ document });
+        res.status(200).json({ message: 'Document deleted successfully' });
     } catch (error) {
-        res.status(500).json({ error });
+        console.error("Error deleting document", error);
+        res.status(500).json({ message: 'Error deleting document', error });
     }
-}));
-
-router.get('/isexist/:uuid', auth.verifyJWT, promiseHandler( async (req,res,next) => {
-    try {
-      const { uuid } = req.params;
-      const isExist = await documentsController.isDocumentExist(uuid)
-      res.status(200).json({ 
-        document: {
-          documentID: uuid,
-          isExist: isExist
-        }
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Error Occurred finding Document'});
-    }
-}));
+});
 
 module.exports = router;

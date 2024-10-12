@@ -1,0 +1,145 @@
+.openAi {
+  display: flex;
+  flex-direction: column;
+  /* 검색창, 본문, 버튼을 세로로 나열 */
+  height: 100%;
+  padding: 1rem;
+  box-sizing: border-box;
+
+  .toggle-container {
+    display: flex;
+    justify-content: space-between;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+    width: 300px;
+    height: 35px;
+    margin-bottom: 1rem;
+  }
+
+  .toggle-button {
+    flex: 1;
+    text-align: center;
+    padding: 8px 0;
+    font-size: 14px;
+    font-weight: bold;
+    color: #643cb4;
+    /* 아이폰 스타일의 기본 텍스트 색상 */
+    background-color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  .toggle-button.active {
+    background-color: #643cb4;
+    /* 선택된 탭의 배경색 */
+    color: white;
+    /* 선택된 탭의 텍스트 색상 */
+  }
+
+  .option-drawer {
+    display: flex;
+    flex-direction: row;
+    /* 세로로 나열 */
+    gap: 1rem;
+    /* 서랍 사이 간격 */
+    width: 300px;
+    /* 전체 서랍의 너비 */
+  }
+
+  .dropdown {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .dropdown label {
+    font-size: 14px;
+    color: #333;
+  }
+
+  .dropdown select {
+    padding: 0.5rem;
+    font-size: 14px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+  }
+
+  .wrap {
+    flex: 0 0 auto;
+    /* 검색창은 고정 크기 */
+  }
+
+  .search {
+    display: flex;
+    width: 100%;
+    margin: 1rem 0 1rem 0;
+    /* 검색창과 본문 사이 간격 */
+
+    .searchTerm {
+      flex: 1;
+      padding: 0.5rem;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .searchButton {
+      padding: 0.5rem 1rem;
+      background-color: #643cb4;
+      color: white;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 0.5rem;
+      border-radius: 4px;
+    }
+  }
+
+  .flex-column {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    /* 본문은 가변 크기 */
+    max-height: 100%;
+    /* 서랍 내에서 최대 높이를 제한 */
+    overflow-y: auto;
+    /* 내용이 많을 경우 스크롤 */
+
+    .result {
+      flex: 1;
+      /* 본문이 최대한 공간을 차지 */
+      resize: none;
+      width: 100%;
+      padding: 0.5rem;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+      max-width: 100%;
+      /* 서랍 너비를 넘지 않도록 설정 */
+      overflow-y: auto;
+      /* 응답이 길 경우 스크롤 */
+    }
+
+    .copy-btn {
+      flex: 0 0 auto;
+      /* 버튼은 고정 크기 */
+      padding: 0.7rem;
+      font-size: 16px;
+      background-color: #643cb4;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+      margin-top: 1rem;
+      text-align: center;
+      width: 100%;
+      /* 버튼이 서랍 너비에 맞게 전체 너비 차지 */
+    }
+  }
+}

@@ -15,7 +15,7 @@ function Registeration() {
     event.preventDefault();
     setIsLoading(true);
     try {
-      await axios.post("http://localhost:8000/users/register", { name, email, password });
+      await axios.post("http://localhost:8080/users/register", { name, email, password });
       setError("");
       navigate("/login");
     } catch (err) {
@@ -26,54 +26,54 @@ function Registeration() {
   };
 
   return (
-        <form onSubmit={handleSubmit}>
-          <h2>Register and Inprove your Workflow</h2>
-          <div className="input-div">
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              placeholder="Name"
-            />
-            {/* <label htmlFor="email" className="">Email Address</label> */}
-          </div>
-          <div className="input-div">
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={email}
-              placeholder="Email"
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            {/* <MdOutlineMailOutline className="input_icons" /> */}
-          </div>
+    <form onSubmit={handleSubmit}>
+      <h2>Register and Inprove your Workflow</h2>
+      <div className="input-div">
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+          placeholder="Name"
+        />
+        {/* <label htmlFor="email" className="">Email Address</label> */}
+      </div>
+      <div className="input-div">
+        <input
+          type="email"
+          id="email"
+          name="email"
+          value={email}
+          placeholder="Email"
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        {/* <MdOutlineMailOutline className="input_icons" /> */}
+      </div>
 
-          <div className="input-div">
-            {/* <label htmlFor="password" className="">Password</label> */}
-            <input
-              type="password"
-              id="password"
-              value={password}
-              placeholder="Password"
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            {/* <BsKey className="input_icons" /> */}
-          </div>
-          {error && <p style={{ color: "red" }}>{error}</p>}
-          <button type="submit" disabled={isLoading} className="btn">
-            {isLoading ? "Loading..." : "Sign Up"}
-          </button>
-          <div className="border-div">
-            <span>Already User of DocAI?</span> 
-            <span> 
-                <Link to ="/login">Sign In</Link>
-            </span> 
-          </div>
-        </form>
+      <div className="input-div">
+        {/* <label htmlFor="password" className="">Password</label> */}
+        <input
+          type="password"
+          id="password"
+          value={password}
+          placeholder="Password"
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        {/* <BsKey className="input_icons" /> */}
+      </div>
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      <button type="submit" disabled={isLoading} className="btn">
+        {isLoading ? "Loading..." : "Sign Up"}
+      </button>
+      <div className="border-div">
+        <span>Already User of DocAI?</span>
+        <span>
+          <Link to="/login">Sign In</Link>
+        </span>
+      </div>
+    </form>
   );
 }
 

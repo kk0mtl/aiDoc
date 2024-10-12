@@ -14,7 +14,7 @@ function Login() {
     event.preventDefault();
     setIsLoading(true);
     try {
-      const res = await axios.post("http://localhost:8000/users/login", { email, password });
+      const res = await axios.post("http://localhost:8080/users/login", { email, password });
       console.log(res.data.token);
       // setUser(data.user);
       localStorage.setItem("token", res.data.token);

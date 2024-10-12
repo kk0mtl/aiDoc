@@ -19,26 +19,26 @@ exports.init = (server) => {
         const document = await docController.getDocumentByUUID(documentId)
         console.log(document)
         if (document) return document
-        return await docController.createDocument(documentId, document) ;
+        return await docController.createDocument(documentId, document);
       }
 
       server.join(documentId)
       server.emit("load-document", document.data)
 
-      server.on("send-changes", delta => { 
+      server.on("send-changes", delta => {
         server.broadcast.to(documentId).emit("receive-changes", delta)
       })
 
       server.on("save-changes", async data => {
-        await docController.updateDocument(documentId, data) ;
+        await docController.updateDocument(documentId, data);
         server.broadcast.to(documentId).emit("send-changes", data)
       })
 
-      server.on("update-title", async ({docID, newTitle}) => {
+      server.on("update-title", async ({ docID, newTitle }) => {
         await docController.updateTitle(docID, newTitle).then(() => {
           io.to(docID).emit("title-updated", newTitle);
         }).catch((err) => {
-          console.log("unable to update title",err) ;
+          console.log("unable to update title", err);
         });
       });
     })
