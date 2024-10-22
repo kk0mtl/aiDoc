@@ -4,6 +4,7 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const cors = require('cors');
 const http = require('http');
+const path = require('path');
 const socketEvent = require('./socket/events');
 const bodyParser = require('body-parser');
 const Document = require('./models/document');
@@ -15,9 +16,17 @@ app.use(cors({ origin: "*" })); // 모든 출처 허용
 app.use(express.json()); // JSON 파싱
 app.use(bodyParser.json()); // request body 파싱
 
+// 정적 파일 서빙 (React의 build 폴더)
+app.use(express.static(path.join(__dirname, '../frontend/build')));
+
+// 모든 요청을 React의 index.html로 라우팅
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
+});
+
 // 서버 설정 및 WebSocket 연결
 const server = http.createServer(app);
-const PORT = 8080;
+const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 // WebSocket 이벤트 초기화

@@ -17,8 +17,6 @@ function useQuery() {
   return new URLSearchParams(useLocation().search);
 }
 
-const defaultDocumentId = "default-document-id";
-
 function App() {
   return (
     <BrowserRouter>

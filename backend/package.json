@@ -4,7 +4,8 @@
   "description": "Backend API for real time document editor app",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "node index.js",
+    "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix frontend && npm run build --prefix frontend"
   },
   "repository": {
     "type": "git",
@@ -29,6 +30,7 @@
     "socket.io-client": "^4.8.0"
   },
   "devDependencies": {
+    "@types/dotenv": "^8.2.0",
     "nodemon": "^2.0.20"
   }
 }
