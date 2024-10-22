@@ -3,7 +3,7 @@ import { useEffect, useCallback, useState } from "react";
 import Quill from "quill";
 import { io } from "socket.io-client";
 import "quill/dist/quill.snow.css";
-import { useParams, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import OpenAi from "../TextGen/TextGen";
 import Logo from "../../Assets/LOGO.png";
 
@@ -23,15 +23,14 @@ function DocumentEditor() {
   const [users, setUsers] = useState([]);
   const [title, setTitle] = useState("Untitled Document");
   const [socket, setSocket] = useState();
-  const [content, setContent] = useState();
   const [quill, setQuill] = useState();
-  const { id: docID } = useParams();
   const [isOpenAIVisible, setIsOpenAIVisible] = useState(true);
 
-  // 쿼리 파라미터로 전달된 userName 확인
+  // 쿼리 파라미터로 전달된 userName 및 roomId 확인
   const params = new URLSearchParams(window.location.search);
-  let userName = params.get('userName') || sessionStorage.getItem("user"); // 쿼리 또는 세션에서 사용자 이름 가져오기
-  console.log(userName); // 사용자 이름 출력
+  let userName = params.get('userName') || sessionStorage.getItem("user");
+  let roomId = params.get('roomId');
+  console.log(`UserName: ${userName}`); // 사용자 이름 출력
 
   const toggleOpenAISection = () => {
     setIsOpenAIVisible((prev) => !prev);
@@ -49,9 +48,11 @@ function DocumentEditor() {
       });
   }
 
-  function handleTitleChange(newTitle) {
+  function handleTitleChange(e) {
+    const newTitle = e.target.value;
     setTitle(newTitle);
-    socket.emit("update-title", { docID, title });
+    console.log(`Updating title to: ${newTitle}`);
+    socket.emit("update-title", { roomId, newTitle });
   }
 
   const wrapperRef = useCallback((wrapper) => {
@@ -75,26 +76,24 @@ function DocumentEditor() {
   useEffect(() => {
     if (!socket) return;
 
-    // 새로운 사용자가 접속했을 때
-    socket.on('user-connected', (userName) => {
-      setUsers((prevUsers) => [...prevUsers, userName]);
-    });
-
-    // 사용자가 연결을 끊었을 때
-    socket.on('user-disconnected', (userName) => {
-      setUsers((prevUsers) => prevUsers.filter((user) => user !== userName));
+    // 서버로부터 사용자 목록 업데이트 수신
+    socket.on("update-user-list", (userList) => {
+      console.log("Updated user list:", userList);
+      setUsers(userList); // 사용자 목록 업데이트
     });
 
     // 사용자가 접속 시 서버에 자신의 이름을 알림
-    socket.emit('join-document', { userName, docID });
+    console.log(`Joining room: ${roomId} as ${userName}`);
+    socket.emit('join-room', { userName, roomId });
 
     return () => {
-      socket.emit('leave-document', { userName, docID });
-      socket.off('user-connected');
-      socket.off('user-disconnected');
+      console.log(`Leaving room: ${roomId}`);
+      socket.emit('leave-room', { userName, roomId });
+      socket.off("update-user-list");
     };
-  }, [socket, userName, docID]);
+  }, [socket, userName, roomId]);
 
+  // WebSocket 연결 설정
   useEffect(() => {
     const s = io("http://localhost:8080", {
       origin: "http://localhost:3030/",
@@ -105,37 +104,45 @@ function DocumentEditor() {
 
     setSocket(s);
     return () => {
+      console.log("Disconnecting socket");
       s.disconnect();
     };
   }, []);
 
   useEffect(() => {
     if (socket == null) return;
-    socket.on("title-updated", (title) => setTitle(title));
+    socket.on("title-updated", (newTitle) => {
+      setTitle(newTitle);
+      console.log(`Title updated to: ${newTitle}`);
+    });
   }, [socket]);
 
   useEffect(() => {
     if (socket == null) return;
-    socket.on("save-changes", () => { });
-
+    socket.on("save-changes", () => {
+      console.log("Changes saved");
+    });
   }, [socket]);
 
   useEffect(() => {
     if (socket == null || quill == null) return;
 
     socket.once("load-document", (document) => {
+      console.log("Document loaded", document);
       quill.setContents(document);
       quill.enable();
     });
 
-    socket.emit("get-document", docID);
-  }, [socket, quill, docID]);
+    console.log(`Getting document for room: ${roomId}`);
+    socket.emit("get-document", roomId);
+  }, [socket, quill, roomId]);
 
   useEffect(() => {
     if (socket == null || quill == null) return;
 
     const handler = (delta) => {
-      quill.updateContents(delta);
+      console.log("Received changes", delta);
+      quill.updateContents(delta); // 변경 내용 적용
     };
     socket.on("receive-changes", handler);
 
@@ -149,6 +156,7 @@ function DocumentEditor() {
 
     const handler = (delta, oldDelta, source) => {
       if (source !== "user") return;
+      console.log("Sending changes", delta);
       socket.emit("send-changes", delta);
     };
     quill.on("text-change", handler);
@@ -168,8 +176,8 @@ function DocumentEditor() {
           <input
             id="text"
             type="text"
-            value={title}
-            onChange={(e) => handleTitleChange(e.target.value)}
+            value={title} // 상태 값을 입력 필드의 값으로 설정
+            onChange={handleTitleChange} // 변경 이벤트 처리
           />
         </div>
         <div id="share">

@@ -1,4 +1,4 @@
-// 필요한 모듈 불러오기
+// index.js
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
@@ -44,7 +44,7 @@ mongoose.connect(
 // 문서 관련 라우트 사용
 app.use('/documents', documentsRoutes);
 
-//dashboard 문서 목록 가져오기 (roomId에 해당하는 문서들)
+// roomId에 해당하는 문서 목록 가져오기
 router.get('/:roomId', async (req, res) => {
   const { roomId } = req.params;
 
@@ -60,31 +60,20 @@ router.get('/:roomId', async (req, res) => {
   }
 });
 
-// 이미지 다운로드 엔드포인트
-app.post('/download-image', async (req, res) => {
-  const { imageUrl } = req.body;
+// 단일 roomId에 해당하는 문서 가져오기
+router.get('/document/:roomId', async (req, res) => {
+  const { roomId } = req.params;
 
   try {
-    const response = await axios({
-      url: imageUrl,
-      method: 'GET',
-      responseType: 'stream', // 이미지를 스트림으로 받음
-    });
-
-    const imagePath = path.resolve(__dirname, 'downloads', 'downloaded_image.jpg'); // 저장될 로컬 파일 경로
-    const writer = fs.createWriteStream(imagePath);
-    response.data.pipe(writer);
-
-    writer.on('finish', () => {
-      res.status(200).json({ message: '이미지 다운로드 성공', imagePath });
-    });
-
-    writer.on('error', (err) => {
-      console.error('이미지 저장 중 오류 발생:', err);
-      res.status(500).json({ message: '이미지 저장 실패' });
-    });
+    const document = await Document.findOne({ roomId });
+    if (!document) {
+      return res.status(404).json({ message: 'Document not found' });
+    }
+    res.status(200).json({ document });
   } catch (error) {
-    console.error('이미지 다운로드 중 오류 발생:', error);
-    res.status(500).json({ message: '이미지 다운로드 실패', error });
+    console.error("Error fetching document", error);
+    res.status(500).json({ message: 'Error fetching document', error });
   }
 });
+
+module.exports = app;

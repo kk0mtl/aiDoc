@@ -1,12 +1,14 @@
+// documents.js
 const express = require('express');
 const router = express.Router();
 const Document = require('../models/document'); // Document 모델
 
-// 문서 생성
+// 단일 문서 생성 또는 기본 문서 생성
 router.post('/', async (req, res) => {
     const { title, content, owner, roomId } = req.body;
 
     try {
+        // roomId를 기반으로 새로운 문서 생성
         const newDocument = new Document({ title, content, owner, roomId });
         await newDocument.save();
         res.status(201).json({ document: newDocument });
@@ -16,7 +18,7 @@ router.post('/', async (req, res) => {
     }
 });
 
-// 문서 조회 (roomId로)
+// 특정 roomId로 문서 목록 가져오기
 router.get('/:roomId', async (req, res) => {
     const { roomId } = req.params;
 
@@ -32,12 +34,12 @@ router.get('/:roomId', async (req, res) => {
     }
 });
 
-// 단일 문서 조회
-router.get('/document/:id', async (req, res) => {
-    const { id } = req.params;
+// 단일 문서 가져오기 (roomId 기준)
+router.get('/document/:roomId', async (req, res) => {
+    const { roomId } = req.params;
 
     try {
-        const document = await Document.findById(id);
+        const document = await Document.findOne({ roomId });
         if (!document) {
             return res.status(404).json({ message: 'Document not found' });
         }
@@ -49,12 +51,12 @@ router.get('/document/:id', async (req, res) => {
 });
 
 // 문서 업데이트
-router.put('/:id', async (req, res) => {
-    const { id } = req.params;
+router.put('/:roomId', async (req, res) => {
+    const { roomId } = req.params;
     const { title, content } = req.body;
 
     try {
-        const document = await Document.findByIdAndUpdate(id, { title, content, updatedAt: Date.now() }, { new: true });
+        const document = await Document.findOneAndUpdate({ roomId }, { title, content, updatedAt: Date.now() }, { new: true });
         if (!document) {
             return res.status(404).json({ message: 'Document not found' });
         }
@@ -66,11 +68,11 @@ router.put('/:id', async (req, res) => {
 });
 
 // 문서 삭제
-router.delete('/:id', async (req, res) => {
-    const { id } = req.params;
+router.delete('/:roomId', async (req, res) => {
+    const { roomId } = req.params;
 
     try {
-        const document = await Document.findByIdAndDelete(id);
+        const document = await Document.findOneAndDelete({ roomId });
         if (!document) {
             return res.status(404).json({ message: 'Document not found' });
         }

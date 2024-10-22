@@ -1,85 +1,81 @@
+// events.js
+// roomId를 docId로 사용
 const { Server } = require("socket.io");
-const Document = require('../models/document');
-const docController = require("../controllers/documents")
-// const Revision = require('../models/revision');
-//
+const docController = require("../controllers/documents");
+
+const usersInRooms = {}; // 각 roomId에 대한 사용자 배열을 저장하는 객체
 
 exports.init = (server) => {
   const io = new Server(server, {
     cors: {
       origin: "*",
-      // methods: ["GET", "POST"],
     },
   });
 
-  io.on("connection", (server) => {
-    server.on("get-document", async documentId => {
-      const document = async (documentId) => {
-        if (documentId == null) return
-        const document = await docController.getDocumentByUUID(documentId)
-        console.log(document)
-        if (document) return document
-        return await docController.createDocument(documentId, document);
+  io.on("connection", (socket) => {
+    socket.on("join-room", async ({ userName, roomId }) => {
+      console.log(`${userName} joined room ${roomId}`);
+
+      // 방 목록에 사용자가 존재하는지 확인 후 추가
+      if (!usersInRooms[roomId]) {
+        usersInRooms[roomId] = [];
       }
 
-      server.join(documentId)
-      server.emit("load-document", document.data)
+      // 중복된 이름 방지
+      if (!usersInRooms[roomId].includes(userName)) {
+        usersInRooms[roomId].push(userName);
+      }
 
-      server.on("send-changes", delta => {
-        server.broadcast.to(documentId).emit("receive-changes", delta)
-      })
+      // 방에 있는 모든 사용자에게 사용자 목록 전달
+      io.to(roomId).emit("update-user-list", usersInRooms[roomId]);
 
-      server.on("save-changes", async data => {
-        await docController.updateDocument(documentId, data);
-        server.broadcast.to(documentId).emit("send-changes", data)
-      })
+      // roomId를 documentId로 간주하여 문서 로드 또는 생성
+      const document = await docController.getDocumentByUUID(roomId);
+      if (!document) {
+        await docController.createDocument(roomId);
+      }
 
-      server.on("update-title", async ({ docID, newTitle }) => {
-        await docController.updateTitle(docID, newTitle).then(() => {
-          io.to(docID).emit("title-updated", newTitle);
-        }).catch((err) => {
-          console.log("unable to update title", err);
-        });
+      socket.join(roomId);
+      console.log(`User ${userName} has joined room: ${roomId}`);
+      socket.emit("load-document", document?.data);
+
+      // 방에 있는 모든 사용자에게 사용자 목록 전달
+      io.to(roomId).emit("update-user-list", usersInRooms[roomId]);
+
+      // 연결 해제 시 사용자 제거 처리
+      socket.on("disconnect", () => {
+        usersInRooms[roomId] = usersInRooms[roomId].filter((name) => name !== userName);
+        io.to(roomId).emit("update-user-list", usersInRooms[roomId]);
+        console.log(`${userName} left room ${roomId}`);
       });
-    })
-  })
+    });
 
-  // io.on('connection', (socket) => {
-  //     socket.on('join', async (documentId) => {
-  //         const document = await Document.findById(documentId);
-  //         if (!document) {
-  //             return socket.emit('document:not-found');
-  //         }
-  //         socket.join(documentId);
-  //         socket.emit('document', document.content);
-  //     });
+    // 클라이언트에서 발생하는 문서 수정 사항 전송
+    socket.on("send-changes", async (delta) => {
+      const roomId = Array.from(socket.rooms)[1]; // 소켓이 가입된 방 중 실제 roomId 가져오기
+      if (roomId) {
+        console.log(`Sending changes to room ${roomId}`);
+        socket.broadcast.to(roomId).emit("receive-changes", delta);
+      }
+    });
 
-  //     socket.on('change', async (data) => {
-  //         const { documentId, delta } = data;
-  //         const document = await Document.findById(documentId);
-  //         if (!document) {
-  //             return socket.emit('document:not-found');
-  //         }
+    // 문서 저장
+    socket.on("save-changes", async (data) => {
+      const roomId = Array.from(socket.rooms)[1]; // 소켓이 가입된 방 중 실제 roomId 가져오기
+      if (roomId) {
+        console.log(`Saving changes for room ${roomId}`);
+        await docController.updateDocument(roomId, data);
+        socket.broadcast.to(roomId).emit("send-changes", data);
+      }
+    });
 
-  //         // Save the changes as a new revision
-  //         // const revision = new Revision({
-  //         //     document: document._id,
-  //         //     content: document.content,
-  //         //     delta: delta
-  //         // });
-  //         // await revision.save();
-
-  //         // Update the document content
-  //         document.content = delta;
-  //         document.updatedAt = Date.now();
-  //         await document.save();
-
-  //         // Emit the changes to all users connected to the document
-  //         io.to(documentId).emit('change', delta);
-  //     });
-
-  //     socket.on('disconnect', () => {
-  //         console.log('user disconnected');
-  //     });
-  // });
+    // 문서 제목 업데이트
+    socket.on("update-title", async ({ roomId, newTitle }) => {
+      if (roomId) {
+        console.log(`Updating title for room ${roomId} : ${newTitle}`);
+        await docController.updateTitle(roomId, newTitle);
+        io.to(roomId).emit("title-updated", newTitle);
+      }
+    });
+  });
 };
