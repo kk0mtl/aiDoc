@@ -95,11 +95,12 @@ function DocumentEditor() {
 
   // WebSocket 연결 설정
   useEffect(() => {
-    const s = io("http://localhost:8080", {
-      origin: "http://localhost:3030/",
-      headers: {
-        "Access-Control-Allow-Origin": "http://localhost:3030",
-      },
+    const s = io(process.env.REACT_APP_BACKEND, {
+      // origin: "http://localhost:3030/",
+      // headers: {
+      //   "Access-Control-Allow-Origin": "http://localhost:3030",
+      // },
+      transports: ['websocket', 'polling'],
     });
 
     setSocket(s);
