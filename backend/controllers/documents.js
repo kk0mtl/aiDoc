@@ -13,17 +13,20 @@ const Document = require('../models/document');
 //     }
 // };
 
-exports.createDocument = async  (userId) => {
+// documents.js
+exports.createDocument = async (roomId) => {
     try {
         const title = "Untitled Document";
-        const owner = userId;
-        const document = new Document({ title, owner });
+        if (!roomId) {
+            throw new Error("roomId is required");
+        }
+        const document = new Document({ title, roomId });
         await document.save();
         return document;
     } catch (error) {
-        console.log("Error in doc creation", error)
+        console.log("Error in doc creation", error);
     }
-}
+};
 
 // exports.getAllDocuments = async (req, res) => {
 //     try {
@@ -35,14 +38,14 @@ exports.createDocument = async  (userId) => {
 // };
 
 
-exports.getAllDocuments = async (userId) => {
-    try {
-        const documents = await Document.find({ owner: userId });
-        return documents;
-    } catch (error) {
-        console.log("error in finding doc", error)
-    }
-}
+// exports.getAllDocuments = async (userId) => {
+//     try {
+//         const documents = await Document.find({ owner: userId });
+//         return documents;
+//     } catch (error) {
+//         console.log("error in finding doc", error)
+//     }
+// }
 
 // exports.getDocumentByUUID = async (req, res) => {
 //     try {
@@ -57,18 +60,18 @@ exports.getAllDocuments = async (userId) => {
 //     }
 // };
 
-exports.getDocumentByUUID = async (uuid) => {
+exports.getDocumentByRoomId = async (roomId) => {
     try {
-        const document = await Document.findOne({ _id : uuid });
+        const document = await Document.findOne({ roomId }); // roomId로 찾음
         if (!document) {
-            console.log("Document not found")
-            return ;
+            console.log("Document not found");
+            return;
         }
         return document;
     } catch (error) {
-        console.log("Error in finding doc", error)
+        console.log("Error in finding document", error);
     }
-}
+};
 
 
 // exports.updateDocument = async (req, res) => {
@@ -90,36 +93,34 @@ exports.getDocumentByUUID = async (uuid) => {
 //     }
 // };
 
-exports.updateDocument = async (uuid, content) => {
+exports.updateDocument = async (roomId, content) => {
     try {
-        const title = content.title;
-        const content = content.content;
-        const document = await Document.findOne({ _id: uuid });
+        const document = await Document.findOne({ roomId }); // roomId로 찾음
         if (!document) {
-            console.log("Document not found while updating")
-            return ;
+            console.log("Document not found while updating");
+            return;
         }
-        document.title = title;
-        document.content = content;
+        document.title = content.title;
+        document.content = content.content;
         document.updatedAt = Date.now();
         await document.save();
         return document;
     } catch (error) {
-        console.log("Error in finding doc", error)
+        console.log("Error in updating document", error);
     }
-}
+};
 
-exports.deleteDocument = async  (userId, docId) => {
-    try {
-        const document = await Document.findOne({ _id: id, owner: req.user._id });
-        if (!document) {
-            console.log(`Document deleted of docId ${docId}`)
-        }
-        await document.remove();
-    } catch (error) {
-        console.log("Error in doc creation", error)
-    }
-}
+// exports.deleteDocument = async (userId, docId) => {
+//     try {
+//         const document = await Document.findOne({ _id: id, owner: req.user._id });
+//         if (!document) {
+//             console.log(`Document deleted of docId ${docId}`)
+//         }
+//         await document.remove();
+//     } catch (error) {
+//         console.log("Error in doc creation", error)
+//     }
+// }
 // exports.deleteDocument = async (req, res) => {
 //     try {
 //         const { id } = req.params;
@@ -134,18 +135,18 @@ exports.deleteDocument = async  (userId, docId) => {
 //     }
 // };
 
-exports.deleteDocument = async (uuid) => {
-    try {
-        const document = await Document.findOne({_id: uuid});
-        if (!document) {
-            return res.status(404).json({ error: 'While deleting, Document not found' });
-        }
-        await document.remove();
-        return document;
-    } catch (error) {
-        console.log("doc couldnt be deleted", error)
-    }
-}
+// exports.deleteDocument = async (uuid) => {
+//     try {
+//         const document = await Document.findOne({ _id: uuid });
+//         if (!document) {
+//             return res.status(404).json({ error: 'While deleting, Document not found' });
+//         }
+//         await document.remove();
+//         return document;
+//     } catch (error) {
+//         console.log("doc couldnt be deleted", error)
+//     }
+// }
 
 
 // exports.addCollaborator = async (req, res) => {
@@ -171,35 +172,35 @@ exports.deleteDocument = async (uuid) => {
 //     }
 // };
 
-
-exports.updateTitle = async (uuid, title) => {
+exports.updateTitle = async (roomId, title) => {
     try {
-        const document = await Document.findOne({ _id: uuid });
+        const document = await Document.findOne({ roomId }); // roomId로 찾음
         if (!document) {
-            console.log("document not found while updating")
-            return ;
+            console.log("Document not found while updating title");
+            return;
         }
         document.title = title;
         document.updatedAt = Date.now();
         await document.save();
         return document;
     } catch (error) {
-        console.log("error in updating doc title", error)
+        console.log("Error in updating doc title", error);
     }
-}
+};
 
-exports.isDocumentExist = async (uuid) => {
-    try {
-        if (uuid.length != 24) {
-          return false
-        }
-        const document = await Document.findOne({ _id: uuid });
-        if (!document) {
-            console.log("document not found")
-            return false;
-        }
-        return true
-    } catch (error) {
-        console.log("Error in finding document from database", error)
-    }
-}
+
+// exports.isDocumentExist = async (uuid) => {
+//     try {
+//         if (uuid.length != 24) {
+//             return false
+//         }
+//         const document = await Document.findOne({ _id: uuid });
+//         if (!document) {
+//             console.log("document not found")
+//             return false;
+//         }
+//         return true
+//     } catch (error) {
+//         console.log("Error in finding document from database", error)
+//     }
+// }

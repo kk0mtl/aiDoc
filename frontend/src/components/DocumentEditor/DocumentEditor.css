@@ -40,6 +40,33 @@
   cursor: pointer;
 }
 
+.user-now {
+  display: flex;
+  flex-direction: row;
+  vertical-align: middle;
+  font-family: Arial, sans-serif;
+}
+
+#user-now ul {
+  list-style-type: none;
+  /* 기본 불릿 포인트 제거 */
+  margin: 5px 25px;
+  padding: 0;
+  display: flex;
+  /* 사용자 목록을 가로로 나열 */
+  gap: 10px;
+  /* 사용자 간 간격 */
+}
+
+#user-now li {
+  padding: 15px 15px;
+  background-color: black;
+  border-radius: 50%;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+}
+
 .documents {
   display: flex;
   justify-content: center;
@@ -131,17 +158,22 @@
 #container .ql-editor {
   width: 60rem;
   max-width: 100%;
-  /* 화면 크기에 맞춰 자동으로 너비를 줄이도록 설정 */
   height: 100vh;
   padding: 3rem;
   margin: 2rem;
   box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.1);
   background-color: white;
+
+  writing-mode: horizontal-tb;
+  text-orientation: mixed;
+  line-height: normal;
+  white-space: normal;
+  word-wrap: break-word;
 }
 
 #container .ql-container.ql-snow {
   border: none;
-  display: flex;
+  display: block;
   justify-content: center;
   flex-wrap: wrap;
 }

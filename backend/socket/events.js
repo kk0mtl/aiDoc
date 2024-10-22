@@ -30,7 +30,7 @@ exports.init = (server) => {
       io.to(roomId).emit("update-user-list", usersInRooms[roomId]);
 
       // roomId를 documentId로 간주하여 문서 로드 또는 생성
-      const document = await docController.getDocumentByUUID(roomId);
+      const document = await docController.getDocumentByRoomId(roomId);
       if (!document) {
         await docController.createDocument(roomId);
       }

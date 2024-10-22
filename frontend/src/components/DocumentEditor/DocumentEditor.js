@@ -179,6 +179,13 @@ function DocumentEditor() {
             value={title} // 상태 값을 입력 필드의 값으로 설정
             onChange={handleTitleChange} // 변경 이벤트 처리
           />
+          <div id="user-now">
+            <ul>
+              {users.map((user, index) => (
+                <li key={index}>{user}</li>
+              ))}
+            </ul>
+          </div>
         </div>
         <div id="share">
           <button onClick={() => shareDocument()}>Share</button>
@@ -187,12 +194,6 @@ function DocumentEditor() {
       <div className="documents">
         <div id="container" ref={wrapperRef}></div>
         <div>
-          <h3>Connected Users:</h3>
-          <ul>
-            {users.map((user, index) => (
-              <li key={index}>{user}</li>
-            ))}
-          </ul>
           <div className={`openai-drawer ${isOpenAIVisible ? 'open' : 'closed'}`}>
             <OpenAi />
           </div>
