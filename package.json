@@ -4,5 +4,8 @@
     "dotenv": "^16.4.5",
     "git-filter-repo": "^0.0.30",
     "wget": "^0.0.1"
+  },
+  "scripts": {
+    "start": "cd backend && npm start"
   }
 }
