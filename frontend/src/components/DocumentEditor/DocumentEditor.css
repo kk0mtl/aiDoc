@@ -1,3 +1,9 @@
+.user-now,
+.assistant {
+  font-family: 'Gowun Dodum', 'Nanum Gothic', 'Times New Roman', Times, serif;
+  font-weight: 600;
+}
+
 #header {
   display: flex;
   justify-content: space-between;
@@ -153,6 +159,44 @@
 .openai-drawer.closed~.openai-toggle-button {
   right: 0;
   /* 버튼이 페이지 오른쪽에 위치 */
+}
+
+/* 기본 폰트 */
+.ql-font-sans-serif {
+  font-family: sans-serif;
+}
+
+.ql-font-noto {
+  font-family: 'Noto Sans', sans-serif;
+}
+
+.ql-font-gowun-dodum {
+  font-family: 'Gowun Dodum', sans-serif;
+}
+
+.ql-font-nanum-gothic {
+  font-family: 'Nanum Gothic', sans-serif;
+}
+
+/* 폰트 이름이 드롭다운에 표시되도록 설정 */
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="sans-serif"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="sans-serif"]::before {
+  content: "Sans Serif";
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="noto-sans"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="noto-sans"]::before {
+  content: "Noto Sans";
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="gowun-dodum"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="gowun-dodum"]::before {
+  content: "Gowun Dodum";
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value="nanum-gothic"]::before,
+.ql-snow .ql-picker.ql-font .ql-picker-item[data-value="nanum-gothic"]::before {
+  content: "Nanum Gothic";
 }
 
 #container .ql-editor {

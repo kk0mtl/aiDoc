@@ -6,10 +6,19 @@ import "quill/dist/quill.snow.css";
 import { Link } from "react-router-dom";
 import OpenAi from "../TextGen/TextGen";
 import Logo from "../../Assets/LOGO.png";
+import { saveAs } from 'file-saver';
+import * as quillToWord from 'quill-to-word';
+
+// Quill의 Font 모듈 가져오기
+const Font = Quill.import("formats/font");
+
+// 사용할 폰트 이름 추가
+Font.whitelist = ["sans-serif", "noto-sans", "gowun-dodum", "nanum-gothic"];
+Quill.register(Font, true);
 
 const OPTIONS = [
   [{ header: [1, 2, 3, 4, 5, 6, false] }],
-  [{ font: [] }],
+  [{ font: ["sans-serif", "noto-sans", "gowun-dodum", "nanum-gothic"] }],
   [{ list: "ordered" }, { list: "bullet" }],
   ["bold", "italic", "underline"],
   [{ color: [] }, { background: [] }],
@@ -26,6 +35,19 @@ function DocumentEditor() {
   const [quill, setQuill] = useState();
   const [isOpenAIVisible, setIsOpenAIVisible] = useState(true);
 
+  // 문서를 Word로 저장하는 함수
+  const saveAsWord = async () => {
+    if (!quill) return;
+
+    const delta = quill.getContents();
+    const docBlob = await quillToWord.generateWord(delta, {
+      exportAs: 'blob',
+      title: title,
+    });
+
+    saveAs(docBlob, `${title}.docx`);
+  };
+
   // 쿼리 파라미터로 전달된 userName 및 roomId 확인
   const params = new URLSearchParams(window.location.search);
   let userName = params.get('userName') || sessionStorage.getItem("user");
@@ -35,18 +57,6 @@ function DocumentEditor() {
   const toggleOpenAISection = () => {
     setIsOpenAIVisible((prev) => !prev);
   };
-
-  function shareDocument() {
-    const link = document.location.href;
-    navigator.clipboard
-      .writeText(link)
-      .then(() => {
-        alert("Link copied to clipboard!");
-      })
-      .catch((err) => {
-        console.log("Failed to copy link: ", err);
-      });
-  }
 
   function handleTitleChange(e) {
     const newTitle = e.target.value;
@@ -95,10 +105,10 @@ function DocumentEditor() {
 
   // WebSocket 연결 설정
   useEffect(() => {
-    const s = io(process.env.REACT_APP_BACKEND, {
-      // origin: "http://localhost:3030/",
+    const s = io(process.env.REACT_APP_BACKEND || "http://localhost:8080", {
+      // origin: "http://localhost:8080/",
       // headers: {
-      //   "Access-Control-Allow-Origin": "http://localhost:3030",
+      //   "Access-Control-Allow-Origin": "http://localhost:8080",
       // },
       transports: ['websocket', 'polling'],
     });
@@ -152,20 +162,35 @@ function DocumentEditor() {
     };
   }, [socket, quill]);
 
+
   useEffect(() => {
     if (socket == null || quill == null) return;
 
     const handler = (delta, oldDelta, source) => {
       if (source !== "user") return;
-      console.log("Sending changes", delta);
+
+      // 사용자의 색상 찾기
+      const user = users.find(u => u.name === userName);
+      const userColor = user ? user.color : "#FFFFFF"; // 사용자의 색상 또는 기본값
+
+      // 커서 색상 변경
+      const changeCaretColor = (color) => {
+        quill.root.style.caretColor = color; // 커서 색상을 동적으로 변경
+      };
+
+      // 페이지 로드 시 한 번 커서 색상 설정
+      changeCaretColor(userColor);
+
       socket.emit("send-changes", delta);
     };
+
     quill.on("text-change", handler);
 
     return () => {
       quill.off("text-change", handler);
     };
-  }, [socket, quill]);
+  }, [socket, quill, users, userName]);
+
 
   return (
     <div>
@@ -183,18 +208,18 @@ function DocumentEditor() {
           <div id="user-now">
             <ul>
               {users.map((user, index) => (
-                <li key={index}>{user}</li>
+                <li key={index} style={{ backgroundColor: user.color }}>{user.name}</li>
               ))}
             </ul>
           </div>
         </div>
         <div id="share">
-          <button onClick={() => shareDocument()}>Share</button>
+          <button onClick={saveAsWord}>Download</button> {/* Word 저장 버튼 추가 */}
         </div>
       </div>
       <div className="documents">
         <div id="container" ref={wrapperRef}></div>
-        <div>
+        <div className="assistant">
           <div className={`openai-drawer ${isOpenAIVisible ? 'open' : 'closed'}`}>
             <OpenAi />
           </div>

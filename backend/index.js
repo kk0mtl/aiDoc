@@ -16,13 +16,13 @@ app.use(cors({ origin: "*" })); // 모든 출처 허용
 app.use(express.json()); // JSON 파싱
 app.use(bodyParser.json()); // request body 파싱
 
-// 정적 파일 서빙 (React의 build 폴더)
-app.use(express.static(path.join(__dirname, '../frontend/build')));
+// // 정적 파일 서빙 (React의 build 폴더)
+// app.use(express.static(path.join(__dirname, '../frontend/build')));
 
-// 모든 요청을 React의 index.html로 라우팅
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
-});
+// // 모든 요청을 React의 index.html로 라우팅
+// app.get('*', (req, res) => {
+//   res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
+// });
 
 // 서버 설정 및 WebSocket 연결
 const server = http.createServer(app);

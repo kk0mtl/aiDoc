@@ -4,6 +4,30 @@ const { Server } = require("socket.io");
 const docController = require("../controllers/documents");
 
 const usersInRooms = {}; // 각 roomId에 대한 사용자 배열을 저장하는 객체
+const userColors = {}; // 사용자별 색상을 저장하는 객체
+const COLORS = ["#00323F", "#FFCE00", "#83C9D9", "#6690D8", "#E7E5DC", "#590202"]; // 색상 배열
+
+function assignColor(userName, roomId) {
+  // 이미 색상이 부여된 사용자인 경우 기존 색상 반환
+  if (userColors[roomId] && userColors[roomId][userName]) {
+    return userColors[roomId][userName];
+  }
+
+  // 해당 roomId에 이미 사용된 색상 목록을 가져옴
+  const usedColors = usersInRooms[roomId].map((user) => user.color);
+
+  // 사용되지 않은 색상 중에서 할당
+  const availableColors = COLORS.filter((color) => !usedColors.includes(color));
+  const assignedColor = availableColors.length > 0 ? availableColors[0] : COLORS[Math.floor(Math.random() * COLORS.length)];
+
+  // 새로운 사용자에게 색상 할당
+  if (!userColors[roomId]) {
+    userColors[roomId] = {};
+  }
+  userColors[roomId][userName] = assignedColor;
+
+  return assignedColor;
+}
 
 exports.init = (server) => {
   const io = new Server(server, {
@@ -21,9 +45,11 @@ exports.init = (server) => {
         usersInRooms[roomId] = [];
       }
 
-      // 중복된 이름 방지
-      if (!usersInRooms[roomId].includes(userName)) {
-        usersInRooms[roomId].push(userName);
+      // 중복된 이름 방지 및 사용자 추가
+      if (!usersInRooms[roomId].some((user) => user.name === userName)) {
+        const color = assignColor(userName, roomId); // 색상 순차 할당
+        usersInRooms[roomId].push({ name: userName, color });
+        userColors[userName] = color; // 사용자별 색상 저장
       }
 
       // 방에 있는 모든 사용자에게 사용자 목록 전달
@@ -33,21 +59,26 @@ exports.init = (server) => {
       const document = await docController.getDocumentByRoomId(roomId);
       if (!document) {
         await docController.createDocument(roomId);
-      }
+      } else socket.emit("load-document", document?.data);
 
       socket.join(roomId);
       console.log(`User ${userName} has joined room: ${roomId}`);
-      socket.emit("load-document", document?.data);
 
       // 방에 있는 모든 사용자에게 사용자 목록 전달
       io.to(roomId).emit("update-user-list", usersInRooms[roomId]);
 
       // 연결 해제 시 사용자 제거 처리
       socket.on("disconnect", () => {
-        usersInRooms[roomId] = usersInRooms[roomId].filter((name) => name !== userName);
+        usersInRooms[roomId] = usersInRooms[roomId].filter((user) => user.name !== userName);
         io.to(roomId).emit("update-user-list", usersInRooms[roomId]);
         console.log(`${userName} left room ${roomId}`);
       });
+    });
+
+    // 클라이언트로부터 커서 위치를 받음
+    socket.on('cursor-position', (data) => {
+      // 모든 사용자에게 커서 위치 브로드캐스트
+      socket.broadcast.emit('cursor-position-update', data);
     });
 
     // 클라이언트에서 발생하는 문서 수정 사항 전송
