@@ -40,12 +40,27 @@ function DocumentEditor() {
     if (!quill) return;
 
     const delta = quill.getContents();
-    const docBlob = await quillToWord.generateWord(delta, {
-      exportAs: 'blob',
-      title: title,
+
+    // 이미지 URL로 대체
+    const modifiedDelta = delta.ops.map(op => {
+      if (op.insert && op.insert.image) {
+        // 이미지 URL을 텍스트로 변환
+        return { insert: `[이미지: ${op.insert.image}]` };
+      }
+      return op;
     });
 
-    saveAs(docBlob, `${title}.docx`);
+    // Word 파일로 내보내기
+    try {
+      const docBlob = await quillToWord.generateWord({ ops: modifiedDelta }, {
+        exportAs: 'blob',
+        title: title,
+      });
+
+      saveAs(docBlob, `${title}.docx`);
+    } catch (error) {
+      console.error("Word 파일 생성 중 오류 발생:", error);
+    }
   };
 
   // 쿼리 파라미터로 전달된 userName 및 roomId 확인
